@@ -1,0 +1,207 @@
+/* ========================================
+   🎯 CONFIGURATION SECTION
+   ======================================== */
+:root {
+    /* === SVG Pattern Configuration === */
+    --svg-color: #191E29;
+    --svg-size: 32px; /* Increased from 25px */
+    --svg-stroke-width: 1.2; /* Increased stroke thickness */
+    --pattern-opacity: 0.15;
+    
+    /* === Ripple Animation Configuration === */
+    --ripple-rings: 6; /* Reduced from 8 */
+    --ripple-delay-per-ring: 100ms; /* Slightly slower ring propagation */
+    --ripple-duration: 2800ms; /* Slightly slower - balanced speed */
+    --ripple-ease: linear; /* Linear is faster than bezier calculations */
+    
+    /* === Outer Circle Configuration === */
+    --circle-start-size: 85vw;
+    --circle-duration: 2800ms; /* Matched with ripple speed */
+    --circle-delay-per-ring: 500ms; /* Slightly slower circle propagation */
+    --circle-rings: 4;
+    --circle-opacity-start: 0.4;
+    --circle-opacity-end: 0;
+    --circle-stroke-width: 2px;
+    
+    /* === Grid Configuration === */
+    --grid-gap: 34px; /* SVG size (32px) + 2px gap = 34px total spacing */
+    --grid-dot-size: 32px; /* Match SVG size */
+    --grid-dot-color: rgba(255, 255, 255, 0.6);
+    
+    /* === Animation Loop Gap === */
+    --loop-gap: 500ms; /* Pause between animation cycles */
+}
+
+/* ========================================
+   🎨 BASE STYLES
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow-x: hidden;
+    background: #070F17;
+}
+
+/* ========================================
+   🏔️ HERO SECTION
+   ======================================== */
+.hero {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #070F17;
+    overflow: hidden;
+    /* Isolate stacking context for performance */
+    isolation: isolate;
+}
+
+/* ========================================
+   🌊 SVG PATTERN BACKGROUND - REMOVED
+   ======================================== */
+.hero__pattern {
+    display: none; /* Static background removed - only animated SVGs remain */
+}
+
+/* ========================================
+   🎯 ANIMATED GRID OVERLAY
+   ======================================== */
+.hero__grid {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+
+.grid__dot {
+    width: 32px;
+    height: 32px;
+    
+    /* Performance: GPU-accelerated transforms only */
+    transform: scale(1) translateZ(0);
+    transform-origin: center;
+    backface-visibility: hidden;
+    
+    /* REMOVED: perspective (expensive 3D calculations) */
+    
+    /* Apply animation with computed delay */
+    animation: ripple var(--ripple-duration) linear infinite both;
+    animation-delay: var(--ring-delay, 0ms);
+    
+    /* Contain layout and paint for performance */
+    contain: layout style paint;
+    
+    /* Disable pointer events */
+    pointer-events: none;
+}
+
+.grid__dot svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* Force GPU layer */
+    transform: translateZ(0);
+    /* Prevent anti-aliasing calculations */
+    shape-rendering: optimizeSpeed;
+}
+
+/* Ripple Animation - Optimized with fewer keyframes for better performance */
+@keyframes ripple {
+    0%, 100% {
+        transform: scale(1) translateZ(0);
+        opacity: 1;
+    }
+    
+    50% {
+        transform: scale(0) translateZ(0);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   🔵 OUTER CIRCLE ANIMATIONS - DISABLED FOR PERFORMANCE
+   ======================================== */
+.hero__circles {
+    display: none; /* Disabled for optimal performance */
+}
+
+.circle__ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateZ(0);
+    border-radius: 50%;
+    border: var(--circle-stroke-width) solid var(--svg-color);
+    
+    /* Performance: Removed will-change, added containment */
+    backface-visibility: hidden;
+    contain: layout style paint;
+    
+    /* Apply animation with computed delay */
+    animation: circleExpand var(--circle-duration) var(--ripple-ease) infinite;
+    animation-delay: var(--circle-delay, 0ms);
+}
+
+/* Circle Expansion Animation - Use scale instead of width/height */
+@keyframes circleExpand {
+    0%, 100% {
+        width: var(--circle-start-size);
+        height: var(--circle-start-size);
+        opacity: var(--circle-opacity-start);
+        transform: translate(-50%, -50%) scale(1) translateZ(0);
+    }
+    
+    50% {
+        width: var(--circle-start-size);
+        height: var(--circle-start-size);
+        opacity: var(--circle-opacity-end);
+        transform: translate(-50%, -50%) scale(1.5) translateZ(0);
+    }
+}
+
+/* ========================================
+   🚀 PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+
+/* Reduce motion for accessibility and performance on low-end devices */
+@media (prefers-reduced-motion: reduce) {
+    .grid__dot,
+    .circle__ring {
+        animation: none !important;
+    }
+}
+
+/* Optional: Disable animations on very small screens to save battery */
+@media (max-width: 480px) and (max-height: 700px) {
+    :root {
+        --ripple-rings: 6; /* Fewer rings on mobile */
+        --circle-rings: 3;
+    }
+}
+
+/* ========================================
+   📱 RESPONSIVE ADJUSTMENTS
+   ======================================== */
+@media (max-width: 768px) {
+    :root {
+        --grid-gap: 35px;
+        --grid-dot-size: 6px;
+        --circle-start-size: 90vw;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --grid-gap: 30px;
+        --grid-dot-size: 5px;
+        --ripple-delay-per-ring: 60ms;
+    }
+}
